@@ -1,0 +1,40 @@
+# HEARTBEAT.md - Periodic Check Tasks
+
+Each heartbeat (runs every ~30 min during waking hours), check these and batch them together.
+
+## Checks
+
+- **Email**: Any new important/urgent unread emails since last check?
+- **Messages**: Any unread messages that need attention?
+
+## Notify via iMessage
+
+Send to: (your phone number)
+
+Only notify if something actually matters:
+- Important or urgent email (finance, health, someone you know)
+- Message that seems to need a response
+- Reminder about an upcoming event
+
+Stay quiet if nothing's new. Don't spam.
+
+## Quiet Hours
+
+No notifications (start hour, e.g. 23):00–(end hour, e.g. 08):00 (your timezone) unless truly urgent.
+
+## State
+
+Track last check times in `memory/heartbeat-state.json`:
+
+```json
+{
+  "lastChecks": {
+    "email": null,
+    "imessage": null
+  }
+}
+```
+
+---
+
+Copy this file to `HEARTBEAT.md` and fill in your phone number and quiet hours.

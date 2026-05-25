@@ -1,0 +1,5 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": ["."],
+  "env": ".env"
+}
