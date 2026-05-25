@@ -1,8 +1,8 @@
 # Bene
 
-Blair's personal AI assistant — built on [LangGraph](https://github.com/langchain-ai/langgraph) and Claude.
+Blair's personal AI assistant. It's built on [LangGraph](https://github.com/langchain-ai/langgraph) and Claude.
 
-Bene monitors email and iMessages, answers questions, searches the web, manages memory across sessions, and runs periodic heartbeat checks — all from the terminal.
+Bene monitors email and iMessages, answers questions, searches the web, manages memory across sessions, runs periodic heartbeat checks, and many more.
 
 ## Installation
 
@@ -43,9 +43,7 @@ Bene reads these markdown files at startup to know who he is and who he is helpi
 | `memory/YYYY-MM-DD.md` | Daily memory logs |
 | `MEMORY.md` | Long-term curated memory |
 
-Edit any of these files to change Bene's behaviour — changes take effect on the next session.
-
-For anyone new setting up the agent:
+Edit any of these files to change Bene's behaviour. For anyone new setting up the agent:
 
 ```bash
   cd src/agent/bene/workspace
