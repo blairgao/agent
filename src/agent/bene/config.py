@@ -30,9 +30,7 @@ MODEL: str = os.getenv("BENE_MODEL", "claude-sonnet-4-6")
 MAX_TOKENS: int = int(os.getenv("BENE_MAX_TOKENS", "8192"))
 
 # ── Brave Search ──────────────────────────────────────────────────────────
-BRAVE_API_KEY: str | None = os.getenv(
-    "BRAVE_API_KEY", "BSAVzZHUW-LXAntK5C5kn6P7_Nml3pp"
-)
+BRAVE_API_KEY: str | None = os.getenv("BRAVE_API_KEY")
 
 # ── Heartbeat ─────────────────────────────────────────────────────────────
 HEARTBEAT_INTERVAL_MINUTES: int = int(os.getenv("BENE_HEARTBEAT_INTERVAL", "30"))
@@ -41,8 +39,8 @@ QUIET_HOUR_START: int = 23
 QUIET_HOUR_END: int = 8
 
 # ── User ──────────────────────────────────────────────────────────────────
-USER_PHONE: str = "+14158108372"
-USER_NAME: str = "Blair"
+USER_PHONE: str | None = os.getenv("BENE_USER_PHONE")
+USER_NAME: str = os.getenv("BENE_USER_NAME", "User")
 USER_TZ: str = "America/Los_Angeles"
 
 def ensure_dirs() -> None:

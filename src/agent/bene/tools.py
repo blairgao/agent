@@ -198,7 +198,7 @@ def send_imessage(to: str, message: str) -> str:
     Only send if something genuinely matters — don't spam.
 
     Args:
-        to: Phone number or Apple ID (e.g. "+14158108372").
+        to: Phone number or Apple ID (e.g. "+15551234567").
         message: The message text to send.
     """
     try:
