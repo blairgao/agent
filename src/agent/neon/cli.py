@@ -96,18 +96,29 @@ def challenge(thread: str):
     )
 
     from .agent import make_agent, run_turn
+    from .tools import print_session_log
+
     agent = make_agent(mode="challenge")
 
-    response = run_turn(
-        agent,
-        message=(
-            "Begin the NEON authentication sequence. "
-            "Read your MISSION.md and CREW.md workspace files first, then call neon_connect() "
-            "to open the comm channel. Work through every checkpoint until authentication "
-            "succeeds or you exhaust all attempts. Log the final outcome."
-        ),
-        thread_id=thread,
-    )
+    try:
+        response = run_turn(
+            agent,
+            message=(
+                "Begin the NEON authentication sequence. "
+                "Your mission files are already loaded — call neon_connect() immediately. "
+                "Work through every checkpoint until authentication succeeds. "
+                "If you receive a NEON_ERROR, stop and report what failed."
+            ),
+            thread_id=thread,
+        )
+    except KeyboardInterrupt:
+        click.echo("\n(interrupted)")
+        response = "(interrupted by pilot)"
+    except Exception as e:
+        response = f"(agent error: {e})"
+
+    print_session_log()
+    click.echo()
     _print_neon(response)
     click.echo()
 

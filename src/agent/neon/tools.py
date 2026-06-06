@@ -13,8 +13,52 @@ from langchain_core.tools import tool
 from .config import BRAVE_API_KEY, NEON_WS_URL, USER_TZ
 from . import memory as mem
 
-# Module-level WebSocket connection (persists across tool calls in a session)
+# Module-level WebSocket connection and session log
 _ws = None
+_session_log: list[str] = []
+
+
+def _log(entry: str) -> None:
+    _session_log.append(entry)
+    print(entry, flush=True)
+
+
+def print_session_log() -> None:
+    """Print the full session transcript. Called by the CLI after the agent finishes."""
+    if not _session_log:
+        return
+    print("\n" + "=" * 60, flush=True)
+    print("SESSION TRANSCRIPT", flush=True)
+    print("=" * 60, flush=True)
+    for line in _session_log:
+        print(line, flush=True)
+    print("=" * 60 + "\n", flush=True)
+
+
+# ── Transmission reconstruction ───────────────────────────────────────────
+
+def _reconstruct(raw: str) -> str:
+    """
+    Parse a list of signal fragments, sort by timestamp, join into a sentence.
+
+    Each fragment: {"word": str, "timestamp": number}
+    Falls back to returning raw if it's not a fragment list.
+    """
+    try:
+        data = json.loads(raw)
+        # Actual format: {"type": "...", "message": [{word, timestamp}, ...]}
+        if isinstance(data, dict) and "message" in data:
+            fragments = data["message"]
+        elif isinstance(data, list):
+            fragments = data
+        else:
+            return raw
+        if fragments and "timestamp" in fragments[0]:
+            fragments = sorted(fragments, key=lambda f: f["timestamp"])
+            return " ".join(f["word"] for f in fragments)
+    except (json.JSONDecodeError, KeyError, TypeError, IndexError):
+        pass
+    return raw
 
 
 # ── Date / time ───────────────────────────────────────────────────────────
@@ -73,7 +117,7 @@ def read_workspace_file(path: str) -> str:
     Read a file from the agent workspace.
 
     Args:
-        path: Path relative to the workspace root (e.g. "IDENTITY.md", "MISSION.md").
+        path: Path relative to the workspace root (e.g. "CREW.md", "MISSION.md").
     """
     return mem.read_workspace_file(path)
 
@@ -88,6 +132,60 @@ def write_workspace_file(path: str, content: str) -> str:
         content: Content to write.
     """
     return mem.write_workspace_file(path, content)
+
+
+# ── Computation ───────────────────────────────────────────────────────────
+
+@tool
+def calculate(expression: str) -> str:
+    """
+    Evaluate a mathematical expression and return the result as a string.
+
+    Use for computation checkpoints. Supports standard Python math expressions,
+    including math module functions (sqrt, log, sin, cos, pi, etc.).
+
+    Args:
+        expression: A Python math expression, e.g. "2 ** 32" or "math.sqrt(144)".
+    """
+    try:
+        result = subprocess.run(
+            ["python3", "-c", f"import math; print({expression})"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        output = result.stdout.strip()
+        if result.returncode != 0 or not output:
+            return f"Error: {result.stderr.strip()}"
+        return output
+    except Exception as e:
+        return f"Calculation error: {e}"
+
+
+# ── Shell ─────────────────────────────────────────────────────────────────
+
+@tool
+def run_shell(command: str) -> str:
+    """
+    Run a shell command and return its output.
+
+    Args:
+        command: The shell command to execute.
+    """
+    try:
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        output = result.stdout + result.stderr
+        return output.strip() or "(no output)"
+    except subprocess.TimeoutExpired:
+        return "Command timed out after 30 seconds."
+    except Exception as e:
+        return f"Error: {e}"
 
 
 # ── Web search ────────────────────────────────────────────────────────────
@@ -124,40 +222,11 @@ def web_search(query: str, count: int = 5) -> str:
 
         lines = []
         for r in results:
-            title = r.get("title", "")
-            url = r.get("url", "")
-            desc = r.get("description", "")
-            lines.append(f"**{title}**\n{url}\n{desc}")
+            lines.append(f"{r.get('title', '')}\n{r.get('url', '')}\n{r.get('description', '')}")
         return "\n\n".join(lines)
 
     except Exception as e:
         return f"Search error: {e}"
-
-
-# ── Shell ─────────────────────────────────────────────────────────────────
-
-@tool
-def run_shell(command: str) -> str:
-    """
-    Run a shell command and return its output.
-
-    Args:
-        command: The shell command to execute.
-    """
-    try:
-        result = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        output = result.stdout + result.stderr
-        return output.strip() or "(no output)"
-    except subprocess.TimeoutExpired:
-        return "Command timed out after 30 seconds."
-    except Exception as e:
-        return f"Error: {e}"
 
 
 # ── NEON WebSocket comm ───────────────────────────────────────────────────
@@ -167,19 +236,28 @@ def neon_connect() -> str:
     """
     Open a comm channel to NEON station and receive the first transmission.
 
-    Call this at the start of an authentication attempt. Returns the first
-    message received from NEON after connecting.
+    Transmissions arrive as a JSON list of signal fragments sorted by timestamp.
+    This tool reconstructs them into a readable sentence.
+    Only call this at the start of a fresh attempt — not after an error. Fix
+    the root cause of any error before reconnecting.
     """
-    global _ws
+    global _ws, _session_log
+    _session_log = []  # reset log for new session
     try:
         import websocket  # websocket-client
         _ws = websocket.WebSocket()
+        _ws.settimeout(30)
         _ws.connect(NEON_WS_URL)
-        # Receive the opening transmission from NEON
-        msg = _ws.recv()
-        return f"COMM CHANNEL OPEN\n\n{msg}"
+        raw = _ws.recv()
+        reconstructed = _reconstruct(raw)
+        _log(f"\n[CONNECT] Comm channel open")
+        _log(f"[NEON >>] {reconstructed}")
+        return f"COMM CHANNEL OPEN\n\nTRANSMISSION: {reconstructed}"
     except Exception as e:
-        return f"Failed to connect to NEON: {e}"
+        _ws = None
+        msg = f"Failed to connect to NEON: {e}"
+        _log(f"[ERROR] {msg}")
+        return msg
 
 
 @tool
@@ -189,38 +267,64 @@ def neon_send(message: str) -> str:
 
     The message must be a single JSON object with a 'type' field:
       - enter_digits: {"type": "enter_digits", "digits": "<string>"}
-      - speak_text:   {"type": "speak_text", "text": "<string>"}
+      - speak_text:   {"type": "speak_text", "text": "<string>"}  (max 256 chars)
 
-    NEON's protocol parser is ancient and unforgiving — no extra text, only valid JSON.
+    If NEON returns an error or timeout, the connection is closed automatically.
+    Do NOT call neon_connect() to reconnect until the error is understood and fixed.
 
     Args:
         message: JSON string to transmit to NEON.
     """
     global _ws
     if _ws is None:
-        return "Not connected to NEON. Call neon_connect() first."
+        return "Not connected to NEON. Call neon_connect() to start a session."
     try:
-        # Validate it's JSON before sending
-        json.loads(message)
+        json.loads(message)  # validate before sending
+        _log(f"[US  <<] {message}")
         _ws.send(message)
-        response = _ws.recv()
-        return response
+        raw = _ws.recv()
+        # Detect error/timeout responses — close and stop
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict) and parsed.get("type") == "error":
+                err_fragments = parsed.get("message", raw)
+                if isinstance(err_fragments, list):
+                    err_msg = " ".join(
+                        f["word"] for f in sorted(err_fragments, key=lambda f: f["timestamp"])
+                    )
+                else:
+                    err_msg = str(err_fragments)
+                _log(f"[NEON >>] ERROR: {err_msg}")
+                _log("[CLOSED] Connection closed due to error — diagnose before reconnecting")
+                _ws.close()
+                _ws = None
+                return (
+                    f"NEON_ERROR: {err_msg}\n"
+                    "Connection closed. Diagnose the error before calling neon_connect()."
+                )
+        except (json.JSONDecodeError, TypeError):
+            pass
+        reconstructed = _reconstruct(raw)
+        _log(f"[NEON >>] {reconstructed}")
+        return f"TRANSMISSION: {reconstructed}"
     except json.JSONDecodeError as e:
-        return f"Invalid JSON — NEON would reject this: {e}"
+        return f"Invalid JSON — not sent: {e}"
     except Exception as e:
+        _log(f"[ERROR] Comm error: {e}")
         _ws = None
-        return f"Comm error (connection reset): {e}"
+        return f"Comm error (connection dropped): {e}"
 
 
 @tool
 def neon_disconnect() -> str:
-    """Close the comm channel to NEON station."""
+    """Explicitly close the comm channel to NEON station."""
     global _ws
     if _ws is None:
         return "No active connection."
     try:
         _ws.close()
         _ws = None
+        _log("[CLOSED] Comm channel closed by co-pilot")
         return "Comm channel closed."
     except Exception as e:
         _ws = None
@@ -237,8 +341,9 @@ ALL_TOOLS = [
     write_long_term_memory,
     read_workspace_file,
     write_workspace_file,
-    web_search,
+    calculate,
     run_shell,
+    web_search,
     neon_connect,
     neon_send,
     neon_disconnect,

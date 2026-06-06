@@ -4,11 +4,21 @@ from __future__ import annotations
 
 from langchain_anthropic import ChatAnthropic
 from langchain.agents import create_agent
+from langchain_core.callbacks import BaseCallbackHandler
 from langgraph.checkpoint.memory import MemorySaver
 
 from .config import ANTHROPIC_API_KEY, MAX_TOKENS, MODEL
 from .prompts import build_system_prompt
 from .tools import ALL_TOOLS
+
+
+class _VerboseCallback(BaseCallbackHandler):
+    def on_tool_start(self, serialized, input_str, **kwargs):
+        name = serialized.get("name", "?")
+        print(f"[AGENT] calling tool: {name}({input_str[:120]})", flush=True)
+
+    def on_llm_start(self, serialized, prompts, **kwargs):
+        print("[AGENT] thinking...", flush=True)
 
 
 def make_agent(mode: str = "chat"):
@@ -53,7 +63,7 @@ def run_turn(
         message: User message to send.
         thread_id: Conversation thread ID for session continuity.
     """
-    config = {"configurable": {"thread_id": thread_id}}
+    config = {"configurable": {"thread_id": thread_id}, "callbacks": [_VerboseCallback()]}
     result = agent.invoke(
         {"messages": [{"role": "user", "content": message}]},
         config=config,

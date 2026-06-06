@@ -12,6 +12,10 @@ for _candidate in [Path(__file__).parents[3] / ".env", Path.home() / ".neon" / "
         load_dotenv(_candidate)
         break
 
+# Disable LangSmith tracing for neon — the shared .env may enable it but the
+# LangSmith key is not configured, which causes blocking errors before any output.
+os.environ["LANGCHAIN_TRACING_V2"] = "false"
+
 # ── Workspace ──────────────────────────────────────────────────────────────
 _here = Path(__file__).parent
 WORKSPACE_DIR: Path = _here / "workspace"
@@ -22,7 +26,7 @@ PID_FILE: Path = DATA_DIR / ".neon-daemon.pid"
 LOG_FILE: Path = LOGS_DIR / "neon-daemon.log"
 
 # ── Model ──────────────────────────────────────────────────────────────────
-MODEL: str = os.getenv("NEON_MODEL", "claude-sonnet-4-6")
+MODEL: str = os.getenv("NEON_MODEL", "claude-haiku-4-5-20251001")
 MAX_TOKENS: int = int(os.getenv("NEON_MAX_TOKENS", "8192"))
 
 # ── Brave Search ──────────────────────────────────────────────────────────
