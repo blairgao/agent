@@ -15,10 +15,12 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "httpx>=0.27.0",
     "click>=8.0.0",
+    "websocket-client>=1.6.0",
 ]
 
 [project.scripts]
 bene = "agent.bene.cli:main"
+neon = "agent.neon.cli:main"
 
 
 [project.optional-dependencies]
@@ -29,10 +31,11 @@ requires = ["setuptools>=73.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["agent", "agent.bene"]
+packages = ["agent", "agent.bene", "agent.neon"]
 [tool.setuptools.package-dir]
 "agent" = "src/agent"
 "agent.bene" = "src/agent/bene"
+"agent.neon" = "src/agent/neon"
 
 
 [tool.setuptools.package-data]
