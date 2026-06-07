@@ -7,7 +7,6 @@ import signal
 import sys
 import time
 from datetime import datetime
-from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from .config import (
@@ -20,23 +19,25 @@ from .config import (
     ensure_dirs,
 )
 
-
 # ── PID file management ───────────────────────────────────────────────────
 
 def write_pid() -> None:
+    """Write the current process PID to the PID file."""
     PID_FILE.write_text(str(os.getpid()))
 
 
 def read_pid() -> int | None:
+    """Read the daemon PID from the PID file, or return None if missing/invalid."""
     if PID_FILE.exists():
         try:
             return int(PID_FILE.read_text().strip())
-        except (ValueError, IOError):
+        except (OSError, ValueError):
             pass
     return None
 
 
 def clear_pid() -> None:
+    """Remove the PID file if it exists."""
     if PID_FILE.exists():
         PID_FILE.unlink()
 
@@ -134,7 +135,7 @@ def start_daemon() -> str:
         return f"Neon daemon started in background (PID {pid})."
     else:
         os.setsid()
-        dev_null = open(os.devnull, "r")
+        dev_null = open(os.devnull)
         os.dup2(dev_null.fileno(), sys.stdin.fileno())
         run_daemon_loop()
         sys.exit(0)

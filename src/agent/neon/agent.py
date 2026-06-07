@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from langchain_anthropic import ChatAnthropic
 from langchain.agents import create_agent
+from langchain_anthropic import ChatAnthropic
 from langchain_core.callbacks import BaseCallbackHandler
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -22,8 +22,7 @@ class _VerboseCallback(BaseCallbackHandler):
 
 
 def make_agent(mode: str = "chat"):
-    """
-    Create and return the compiled Neon agent graph.
+    """Create and return the compiled Neon agent graph.
 
     Args:
         mode: "chat" — interactive session with in-session memory (MemorySaver).
@@ -55,8 +54,7 @@ def run_turn(
     message: str,
     thread_id: str = "default",
 ) -> str:
-    """
-    Send one message to Neon and return the final response text.
+    """Send one message to Neon and return the final response text.
 
     Args:
         agent: Compiled agent graph from make_agent().

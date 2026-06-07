@@ -10,9 +10,8 @@ from zoneinfo import ZoneInfo
 import httpx
 from langchain_core.tools import tool
 
-from .config import BRAVE_API_KEY, USER_TZ
 from . import memory as mem
-
+from .config import BRAVE_API_KEY, USER_TZ
 
 # ── Date / time ───────────────────────────────────────────────────────────
 
@@ -27,8 +26,7 @@ def get_current_time() -> str:
 
 @tool
 def append_daily_memory(content: str) -> str:
-    """
-    Append a note to today's daily memory log.
+    """Append a note to today's daily memory log.
 
     Use this whenever you learn something worth remembering for the next session,
     capture a decision, or want to log what you did.
@@ -41,8 +39,7 @@ def append_daily_memory(content: str) -> str:
 
 @tool
 def read_daily_memory(date: str = "") -> str:
-    """
-    Read a daily memory log file.
+    """Read a daily memory log file.
 
     Args:
         date: Date string in YYYY-MM-DD format. Leave empty for today.
@@ -58,8 +55,7 @@ def read_long_term_memory() -> str:
 
 @tool
 def write_long_term_memory(content: str) -> str:
-    """
-    Overwrite MEMORY.md with updated long-term memory content.
+    """Overwrite MEMORY.md with updated long-term memory content.
 
     Use during heartbeats or when Blair asks you to update your long-term memory.
     Keep it curated: distilled insights, not raw logs.
@@ -72,8 +68,7 @@ def write_long_term_memory(content: str) -> str:
 
 @tool
 def read_workspace_file(path: str) -> str:
-    """
-    Read a file from the agent workspace.
+    """Read a file from the agent workspace.
 
     Args:
         path: Path relative to the workspace root (e.g. "SOUL.md", "memory/2025-01-01.md").
@@ -83,8 +78,7 @@ def read_workspace_file(path: str) -> str:
 
 @tool
 def write_workspace_file(path: str, content: str) -> str:
-    """
-    Write a file to the agent workspace.
+    """Write a file to the agent workspace.
 
     Args:
         path: Path relative to the workspace root.
@@ -102,8 +96,7 @@ def get_heartbeat_state() -> str:
 
 @tool
 def update_heartbeat_state(checks_json: str) -> str:
-    """
-    Update heartbeat check timestamps.
+    """Update heartbeat check timestamps.
 
     Args:
         checks_json: JSON string mapping check names to Unix timestamps or ISO strings.
@@ -117,8 +110,7 @@ def update_heartbeat_state(checks_json: str) -> str:
 
 @tool
 def web_search(query: str, count: int = 5) -> str:
-    """
-    Search the web using Brave Search.
+    """Search the web using Brave Search.
 
     Args:
         query: The search query.
@@ -161,8 +153,7 @@ def web_search(query: str, count: int = 5) -> str:
 
 @tool
 def run_shell(command: str) -> str:
-    """
-    Run a shell command and return its output.
+    """Run a shell command and return its output.
 
     Use for reading system state, checking git status, listing files, etc.
     Destructive commands (rm, delete, send) require Blair's explicit approval —
@@ -191,8 +182,7 @@ def run_shell(command: str) -> str:
 
 @tool
 def send_imessage(to: str, message: str) -> str:
-    """
-    Send an iMessage to a phone number or handle.
+    """Send an iMessage to a phone number or handle.
 
     Use this to notify Blair of important things (urgent email, upcoming event, etc.).
     Only send if something genuinely matters — don't spam.
@@ -219,8 +209,7 @@ def send_imessage(to: str, message: str) -> str:
 
 @tool
 def read_imessages(count: int = 10) -> str:
-    """
-    Read recent iMessages from the inbox.
+    """Read recent iMessages from the inbox.
 
     Args:
         count: Number of recent messages to fetch (default 10).

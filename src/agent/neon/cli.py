@@ -6,8 +6,7 @@ import sys
 
 import click
 
-from .config import ensure_dirs, LOG_FILE, WORKSPACE_DIR
-
+from .config import LOG_FILE, WORKSPACE_DIR, ensure_dirs
 
 # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -23,8 +22,7 @@ def _print_error(text: str) -> None:
 
 @click.group()
 def main():
-    """
-    Neon — AI co-pilot for the NEON station authentication sequence.
+    r"""Neon — AI co-pilot for the NEON station authentication sequence.
 
     \b
     Commands:

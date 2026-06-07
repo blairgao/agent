@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from .config import WORKSPACE_DIR, USER_TZ
+from .config import USER_TZ, WORKSPACE_DIR
 
 # Ordered list of workspace files that define Bene's identity & operating rules
 _WORKSPACE_FILES = [
@@ -27,8 +26,7 @@ def _read_workspace_file(name: str) -> str | None:
 
 
 def build_system_prompt(*, mode: str = "chat") -> str:
-    """
-    Assemble the full system prompt from workspace files.
+    """Assemble the full system prompt from workspace files.
 
     Args:
         mode: "chat" for interactive sessions, "heartbeat" for periodic checks.
@@ -54,8 +52,6 @@ Read them carefully — they are your soul, your memory anchor, and your operati
 
     # Load today's and yesterday's daily memory
     today = now.strftime("%Y-%m-%d")
-    yesterday = (now.replace(hour=0, minute=0, second=0, microsecond=0)
-                 .__class__(now.year, now.month, now.day, tzinfo=tz))
     from datetime import timedelta
     yest_date = (now - timedelta(days=1)).strftime("%Y-%m-%d")
 

@@ -54,8 +54,7 @@ def _reconstruct(raw: str) -> str:
 
 @tool
 def calculate(expression: str) -> str:
-    """
-    Evaluate a mathematical expression and return the result.
+    """Evaluate a mathematical expression and return the result.
 
     Supports Python math expressions including math module functions.
 
@@ -77,8 +76,7 @@ def calculate(expression: str) -> str:
 
 @tool
 def wikipedia_summary(title: str) -> str:
-    """
-    Fetch the plain-text summary extract for a Wikipedia article.
+    """Fetch the plain-text summary extract for a Wikipedia article.
 
     Use this for knowledge archive checkpoints. Returns the full extract so
     you can find any word by position.
@@ -103,8 +101,7 @@ def wikipedia_summary(title: str) -> str:
 
 @tool
 def neon_connect() -> str:
-    """
-    Open a comm channel to NEON station and receive the first transmission.
+    """Open a comm channel to NEON station and receive the first transmission.
 
     Call this only at the start of a fresh attempt.
     """
@@ -117,7 +114,7 @@ def neon_connect() -> str:
         _ws.connect(NEON_WS_URL)
         raw = _ws.recv()
         reconstructed = _reconstruct(raw)
-        _log(f"\n[CONNECT] Comm channel open")
+        _log("\n[CONNECT] Comm channel open")
         _log(f"[NEON >>] {reconstructed}")
         return f"COMM CHANNEL OPEN\n\nTRANSMISSION: {reconstructed}"
     except Exception as e:
@@ -129,8 +126,7 @@ def neon_connect() -> str:
 
 @tool
 def neon_send(message: str) -> str:
-    """
-    Send a JSON response to NEON and receive the next transmission.
+    """Send a JSON response to NEON and receive the next transmission.
 
     Message must be a single JSON object:
       - enter_digits: {"type": "enter_digits", "digits": "<string>"}

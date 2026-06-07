@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
-from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from .config import MEMORY_DIR, WORKSPACE_DIR, USER_TZ
+from .config import MEMORY_DIR, USER_TZ, WORKSPACE_DIR
 
 
 def _today() -> str:

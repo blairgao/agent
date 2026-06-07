@@ -2,11 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from zoneinfo import ZoneInfo
-from datetime import datetime
-
-from .config import WORKSPACE_DIR, USER_TZ, NEON_CODE
+from .config import NEON_CODE, WORKSPACE_DIR
 
 _WORKSPACE_FILES = [
     "IDENTITY.md",
@@ -21,6 +17,11 @@ def _read(name: str) -> str | None:
 
 
 def build_system_prompt(*, mode: str = "chat") -> str:
+    """Assemble the full system prompt from workspace files.
+
+    Args:
+        mode: "chat" for interactive sessions, "challenge" for NEON auth sequence.
+    """
     neon_code = NEON_CODE or "NOT SET"
 
     sections: list[str] = [f"""\
