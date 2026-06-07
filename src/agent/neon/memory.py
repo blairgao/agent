@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from typing import Any, cast
 from zoneinfo import ZoneInfo
 
 from .config import MEMORY_DIR, USER_TZ, WORKSPACE_DIR
@@ -58,15 +59,15 @@ def write_long_term_memory(content: str) -> str:
 
 # ── Heartbeat state ───────────────────────────────────────────────────────
 
-def get_heartbeat_state() -> dict:
+def get_heartbeat_state() -> dict[str, Any]:
     """Load heartbeat check timestamps."""
     path = MEMORY_DIR / "heartbeat-state.json"
     if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
+        return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
     return {"lastChecks": {"neon_comm": None}}
 
 
-def update_heartbeat_state(checks: dict) -> str:
+def update_heartbeat_state(checks: dict[str, Any]) -> str:
     """Update heartbeat state with new timestamps."""
     state = get_heartbeat_state()
     state["lastChecks"].update(checks)

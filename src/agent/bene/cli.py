@@ -21,7 +21,7 @@ def _print_error(text: str) -> None:
 # ── CLI root ──────────────────────────────────────────────────────────────
 
 @click.group()
-def main():
+def main() -> None:
     r"""Bene — Blair's personal AI assistant.
 
     \b
@@ -41,7 +41,7 @@ def main():
 @main.command()
 @click.option("--thread", default="main", show_default=True,
               help="Conversation thread ID (for session continuity).")
-def chat(thread: str):
+def chat(thread: str) -> None:
     """Start an interactive chat session with Bene."""
     ensure_dirs()
 
@@ -81,7 +81,7 @@ def chat(thread: str):
 # ── bene heartbeat ────────────────────────────────────────────────────────
 
 @main.command()
-def heartbeat():
+def heartbeat() -> None:
     """Run one heartbeat check right now (foreground, shows output)."""
     ensure_dirs()
     click.echo(click.style("Running heartbeat check...\n", fg="yellow"))
@@ -100,7 +100,7 @@ def heartbeat():
 @main.command()
 @click.option("--foreground", is_flag=True, default=False,
               help="Run in foreground instead of forking to background.")
-def start(foreground: bool):
+def start(foreground: bool) -> None:
     """Start the Bene heartbeat daemon in the background."""
     ensure_dirs()
 
@@ -118,7 +118,7 @@ def start(foreground: bool):
 # ── bene stop ─────────────────────────────────────────────────────────────
 
 @main.command()
-def stop():
+def stop() -> None:
     """Stop the running Bene heartbeat daemon."""
     from .daemon import stop_daemon
     msg = stop_daemon()
@@ -128,7 +128,7 @@ def stop():
 # ── bene status ───────────────────────────────────────────────────────────
 
 @main.command()
-def status():
+def status() -> None:
     """Show daemon status and workspace info."""
     from .daemon import daemon_status
     click.echo(daemon_status())
@@ -142,7 +142,7 @@ def status():
               help="Number of lines to show.")
 @click.option("--follow", "-f", is_flag=True, default=False,
               help="Follow the log (like tail -f).")
-def logs(lines: int, follow: bool):
+def logs(lines: int, follow: bool) -> None:
     """Show or follow the daemon log."""
     if not LOG_FILE.exists():
         click.echo("No log file yet. Start the daemon first.")

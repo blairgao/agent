@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from langchain.agents import create_agent
 from langchain_anthropic import ChatAnthropic
 from langgraph.checkpoint.memory import MemorySaver
@@ -11,14 +13,14 @@ from .prompts import build_system_prompt
 from .tools import ALL_TOOLS
 
 
-def make_agent(mode: str = "chat"):
+def make_agent(mode: str = "chat") -> Any:
     """Create and return the compiled Bene agent graph.
 
     Args:
         mode: "chat" — interactive session with in-session memory (MemorySaver).
               "heartbeat" — stateless single-turn background check.
     """
-    llm = ChatAnthropic(
+    llm = ChatAnthropic(  # type: ignore[call-arg]
         model=MODEL,
         max_tokens=MAX_TOKENS,
         temperature=1,  # Claude's recommended default
@@ -41,7 +43,7 @@ def make_agent(mode: str = "chat"):
 
 
 def run_turn(
-    agent,
+    agent: Any,
     message: str,
     thread_id: str = "default",
 ) -> str:

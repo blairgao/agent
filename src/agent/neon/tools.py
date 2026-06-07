@@ -92,7 +92,7 @@ def wikipedia_summary(title: str) -> str:
         )
         resp.raise_for_status()
         extract = resp.json().get("extract", "")
-        return extract
+        return str(extract)
     except Exception as e:
         return f"Wikipedia fetch error: {e}"
 
@@ -111,9 +111,10 @@ def neon_connect() -> str:
         import websocket
         _ws = websocket.WebSocket()
         _ws.settimeout(30)
-        _ws.connect(NEON_WS_URL)
+        _ws.connect(NEON_WS_URL)  # type: ignore[no-untyped-call]
         raw = _ws.recv()
-        reconstructed = _reconstruct(raw)
+        raw_str: str = raw if isinstance(raw, str) else raw.decode()
+        reconstructed = _reconstruct(raw_str)
         _log("\n[CONNECT] Comm channel open")
         _log(f"[NEON >>] {reconstructed}")
         return f"COMM CHANNEL OPEN\n\nTRANSMISSION: {reconstructed}"
@@ -165,7 +166,8 @@ def neon_send(message: str) -> str:
                 )
         except (json.JSONDecodeError, TypeError):
             pass
-        reconstructed = _reconstruct(raw)
+        raw_str2: str = raw if isinstance(raw, str) else raw.decode()
+        reconstructed = _reconstruct(raw_str2)
         _log(f"[NEON >>] {reconstructed}")
         return f"TRANSMISSION: {reconstructed}"
     except json.JSONDecodeError as e:

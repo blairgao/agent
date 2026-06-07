@@ -103,7 +103,7 @@ def run_daemon_loop() -> None:
     write_pid()
     _log(f"Bene daemon started (PID {os.getpid()}, interval {HEARTBEAT_INTERVAL_MINUTES}m)")
 
-    def _handle_exit(signum, frame):
+    def _handle_exit(signum: int, frame: object) -> None:
         _log(f"Received signal {signum}, shutting down.")
         clear_pid()
         sys.exit(0)
@@ -153,6 +153,7 @@ def stop_daemon() -> str:
     if not is_running():
         return "Bene daemon is not running."
     try:
+        assert pid is not None
         os.kill(pid, signal.SIGTERM)
         # Wait briefly for it to die
         for _ in range(10):

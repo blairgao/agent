@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from langchain.agents import create_agent
 from langchain_anthropic import ChatAnthropic
 from langchain_core.callbacks import BaseCallbackHandler
@@ -13,15 +15,15 @@ from .tools import ALL_TOOLS
 
 
 class _VerboseCallback(BaseCallbackHandler):
-    def on_tool_start(self, serialized, input_str, **kwargs):
+    def on_tool_start(self, serialized: dict[str, Any], input_str: str, **kwargs: Any) -> None:
         name = serialized.get("name", "?")
         print(f"[AGENT] calling tool: {name}({input_str[:120]})", flush=True)
 
-    def on_llm_start(self, serialized, prompts, **kwargs):
+    def on_llm_start(self, serialized: dict[str, Any], prompts: list[str], **kwargs: Any) -> None:
         print("[AGENT] thinking...", flush=True)
 
 
-def make_agent(mode: str = "chat"):
+def make_agent(mode: str = "chat") -> Any:
     """Create and return the compiled Neon agent graph.
 
     Args:
@@ -29,11 +31,11 @@ def make_agent(mode: str = "chat"):
               "challenge" — NEON authentication mode with mission context.
               "heartbeat" — stateless single-turn background check.
     """
-    llm = ChatAnthropic(
+    llm = ChatAnthropic(  # type: ignore[call-arg]
         model=MODEL,
         max_tokens=MAX_TOKENS,
         temperature=1,
-        api_key=ANTHROPIC_API_KEY,
+        api_key=ANTHROPIC_API_KEY,  # type: ignore[arg-type]
     )
 
     system_prompt = build_system_prompt(mode=mode)
@@ -50,7 +52,7 @@ def make_agent(mode: str = "chat"):
 
 
 def run_turn(
-    agent,
+    agent: Any,
     message: str,
     thread_id: str = "default",
 ) -> str:
